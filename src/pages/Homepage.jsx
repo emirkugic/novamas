@@ -29,7 +29,7 @@ const Homepage = () => {
 
 	useEffect(() => {
 		// Fetch posts from WordPress backend
-		fetch("https://novamasblog.com/wp-json/wp/v2/posts?per_page=6&_embed")
+		fetch("https://novamasblog.com/wp-json/wp/v2/posts?per_page=7&_embed")
 			.then((res) => res.json())
 			.then((data) => {
 				if (data && data.length > 0) {
@@ -44,7 +44,8 @@ const Homepage = () => {
 			});
 	}, []);
 
-	const getImageUrl = (post) => {
+	const getImageForPost = (post) => {
+		// Check for featured image
 		if (
 			post._embedded &&
 			post._embedded["wp:featuredmedia"] &&
@@ -52,7 +53,35 @@ const Homepage = () => {
 		) {
 			return post._embedded["wp:featuredmedia"][0].source_url;
 		}
+
+		// Otherwise, get first image from content
+		const content = post.content?.rendered;
+		if (content) {
+			const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+			if (imgMatch) {
+				return imgMatch[1];
+			}
+		}
+
+		// Default image if none found
 		return "https://images.unsplash.com/photo-1544476915-ed1370594142?q=80&w=1287&auto=format&fit=crop";
+	};
+
+	// Limit excerpt text to a specific character count
+	const limitExcerpt = (excerpt, limit = 120) => {
+		if (!excerpt) return "";
+
+		// Remove HTML tags
+		const textOnly = excerpt.replace(/<\/?[^>]+(>|$)/g, "");
+
+		if (textOnly.length <= limit) return excerpt;
+
+		// Find the last space before the limit
+		const trimmed = textOnly.substr(0, limit);
+		const lastSpace = trimmed.lastIndexOf(" ");
+
+		// Return trimmed text with ellipsis
+		return textOnly.substr(0, lastSpace) + "...";
 	};
 
 	return (
@@ -131,30 +160,26 @@ const Homepage = () => {
 				<section className="featured-post">
 					<div className="container">
 						<div className="section-header">
-							<h2 className="section-title">Izdvojeni članak</h2>
+							<h2 className="section-title">Najnoviji članak</h2>
 							<div className="section-line"></div>
 						</div>
 						<div className="featured-card">
 							<div className="featured-image">
 								<img
-									src={getImageUrl(featuredPost)}
+									src={getImageForPost(featuredPost)}
 									alt={featuredPost.title.rendered}
 								/>
 							</div>
 							<div className="featured-content">
-								<div className="post-category">Novi trend</div>
 								<h3
 									className="featured-title"
 									dangerouslySetInnerHTML={{
 										__html: featuredPost.title.rendered,
 									}}
 								/>
-								<div
-									className="featured-excerpt"
-									dangerouslySetInnerHTML={{
-										__html: featuredPost.excerpt.rendered,
-									}}
-								/>
+								<div className="featured-excerpt">
+									<p>{limitExcerpt(featuredPost.excerpt.rendered, 180)}</p>
+								</div>
 								<Link
 									to={`/post/${featuredPost.slug}`}
 									className="btn btn-text"
@@ -189,26 +214,28 @@ const Homepage = () => {
 									key={post.id}
 								>
 									<div className="post-image">
-										<img src={getImageUrl(post)} alt={post.title.rendered} />
+										<img
+											src={getImageForPost(post)}
+											alt={post.title.rendered}
+										/>
 									</div>
 									<div className="post-content">
 										<h3
 											className="post-title"
 											dangerouslySetInnerHTML={{ __html: post.title.rendered }}
 										/>
-										<div
-											className="post-excerpt"
-											dangerouslySetInnerHTML={{
-												__html: post.excerpt.rendered,
-											}}
-										/>
+										<div className="post-excerpt">
+											<p>{limitExcerpt(post.excerpt.rendered, 100)}</p>
+										</div>
 										<div className="post-meta">
 											<span className="post-date">
-												{new Date(post.date).toLocaleDateString("bs-BA", {
-													day: "numeric",
-													month: "long",
-													year: "numeric",
-												})}
+												{new Date(post.date)
+													.toLocaleDateString("bs-BA", {
+														day: "2-digit",
+														month: "2-digit",
+														year: "numeric",
+													})
+													.replace(/\./g, "/")}
 											</span>
 											<span className="read-more">
 												Pročitaj više <ArrowRight size={14} />
@@ -228,54 +255,134 @@ const Homepage = () => {
 				</div>
 			</section>
 
-			{/* Categories Section */}
-			<section className="categories-section">
+			{/* Znanje za uspjeh Section */}
+			<section className="inspiration-section">
 				<div className="container">
 					<div className="section-header">
-						<h2 className="section-title">Kategorije</h2>
+						<h2 className="section-title">Znanje za uspjeh</h2>
 						<div className="section-line"></div>
 					</div>
 
-					<div className="categories-grid">
-						<Link to="/kategorije/modni-trendovi" className="category-card">
-							<div className="category-image">
+					<div className="inspiration-grid">
+						<div className="inspiration-item">
+							<div className="inspiration-icon">
 								<img
-									src="https://images.unsplash.com/photo-1611042553484-d61f84e2424d?q=80&w=1170&auto=format&fit=crop"
-									alt="Modni trendovi"
+									src="https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?q=80&w=1974&auto=format&fit=crop"
+									alt="Znanje"
 								/>
 							</div>
-							<h3 className="category-title">Modni trendovi</h3>
-						</Link>
+							<h3>Znanje za uspjeh</h3>
+							<p>
+								U pozitivnom okruženju, igri, prijateljstvu i ljubavi stvaramo
+								dobre šanse i mogućnosti da svi zajedno budemo bolji, sretniji i
+								zdraviji.
+							</p>
+						</div>
 
-						<Link to="/kategorije/stylish-bebe" className="category-card">
-							<div className="category-image">
+						<div className="inspiration-item">
+							<div className="inspiration-icon">
 								<img
-									src="https://images.unsplash.com/photo-1540479859555-17af45c78602?q=80&w=1170&auto=format&fit=crop"
-									alt="Stylish bebe"
+									src="https://images.unsplash.com/photo-1519225056414-b7d77258fde9?q=80&w=1974&auto=format&fit=crop"
+									alt="Stav"
 								/>
 							</div>
-							<h3 className="category-title">Stylish bebe</h3>
-						</Link>
+							<h3>Stav za uspjeh</h3>
+							<p>
+								Želimo biti moderni u drugom smislu – da su naša djeca zdrava,
+								vesela i kreativna, sa znanjem i mogućnostima koje
+								predstavljamo.
+							</p>
+						</div>
 
-						<Link to="/kategorije/djecja-odjeca" className="category-card">
-							<div className="category-image">
+						<div className="inspiration-item">
+							<div className="inspiration-icon">
 								<img
-									src="https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?q=80&w=1172&auto=format&fit=crop"
-									alt="Dječja odjeća"
+									src="https://images.unsplash.com/photo-1531073149697-2c1945b4fc8e?q=80&w=1974&auto=format&fit=crop"
+									alt="Pokret"
 								/>
 							</div>
-							<h3 className="category-title">Dječja odjeća</h3>
-						</Link>
+							<h3>Pokret za uspjeh</h3>
+							<p>
+								Djeca zaslužuju najbolje. Kroz naš rad potičemo zdravlje,
+								veselje i kreativnost, kao temelje za budućnost.
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
 
-						<Link to="/kategorije/modna-inspiracija" className="category-card">
-							<div className="category-image">
-								<img
-									src="https://images.unsplash.com/photo-1506919258185-6078bba55d2a?q=80&w=1115&auto=format&fit=crop"
-									alt="Modna inspiracija"
-								/>
+			{/* NovamaS kroz generacije Section */}
+			<section className="fashion-tips-section">
+				<div className="container">
+					<div className="tips-container">
+						<div className="tips-content">
+							<h2 className="tips-title">NovamaS kroz generacije</h2>
+							<div className="tips-list">
+								<div className="tip-item">
+									<div className="tip-number">25+</div>
+									<div className="tip-text">
+										<h3>Godina iskustva</h3>
+										<p>
+											Modna agencija NovamaS djeluje od 1997. godine.
+											Organizovali smo niz prepoznatljivih projekata iz oblasti
+											kulture, modne prezentacije za djecu i odrasle.
+										</p>
+									</div>
+								</div>
+
+								<div className="tip-item">
+									<div className="tip-number">10+</div>
+									<div className="tip-text">
+										<h3>Modnih projekata</h3>
+										<p>
+											BH Fashion Week, Hajde budi mi drug, Baščaršijske noći,
+											Kupovina sa razlogom, Proljeće u dječijem domu, Dress to
+											impress, i mnogi drugi.
+										</p>
+									</div>
+								</div>
+
+								<div className="tip-item">
+									<div className="tip-number">∞</div>
+									<div className="tip-text">
+										<h3>Inspiracija za mališane</h3>
+										<p>
+											Ispravlja dječije hodanje, oslobađa djecu straha od javnog
+											nastupa, uči ih scenskom pokretu, plesu i lijepom
+											ophođenju.
+										</p>
+									</div>
+								</div>
 							</div>
-							<h3 className="category-title">Modna inspiracija</h3>
-						</Link>
+						</div>
+						<div className="tips-image">
+							<img
+								src="https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?q=80&w=1169&auto=format&fit=crop"
+								alt="NovamaS kroz generacije"
+							/>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Fashion Spotlight Section */}
+			<section className="stats-section">
+				<div className="container">
+					<div className="divonette-container">
+						<h2 className="divonette-title">Moda za sve generacije</h2>
+						<p className="divonette-text">
+							Otkrijte raznovrsne kolekcije odjeće za djevojčice i dječake svih
+							uzrasta. Nudimo kombinacije za svakodnevne aktivnosti, školske
+							dane ili posebne prilike. U našem asortimanu možete pronaći sve od
+							udobnih majica i hlača do elegantnih outfita za svečane događaje.
+						</p>
+						<div className="divonette-cta">
+							<p>
+								Posjetite nas i pronađite savršene komade koji će vašim
+								mališanima pružiti udobnost i stil.
+							</p>
+							<button className="btn btn-white">Istraži kolekcije</button>
+						</div>
 					</div>
 				</div>
 			</section>
@@ -301,7 +408,7 @@ const Homepage = () => {
 							"https://images.unsplash.com/photo-1626251376234-ad378500148a?q=80&w=1287&auto=format&fit=crop",
 						].map((url, index) => (
 							<a
-								href="https://instagram.com/novamas"
+								href="https://www.instagram.com/novamas_models/"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="instagram-item"
@@ -316,13 +423,13 @@ const Homepage = () => {
 					</div>
 
 					<a
-						href="https://instagram.com/novamas"
+						href="https://www.instagram.com/novamas_models/"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="instagram-link"
 					>
 						<Instagram size={18} />
-						<span>@novamas_kids</span>
+						<span>@novamas_models</span>
 					</a>
 				</div>
 			</section>
@@ -371,25 +478,18 @@ const Homepage = () => {
 							</p>
 							<div className="social-links">
 								<a
-									href="https://facebook.com/novamas"
+									href="https://www.facebook.com/p/Nova-maS-models-100057067287274/"
 									target="_blank"
 									rel="noopener noreferrer"
 								>
 									<Facebook size={20} />
 								</a>
 								<a
-									href="https://instagram.com/novamas"
+									href="https://www.instagram.com/novamas_models/"
 									target="_blank"
 									rel="noopener noreferrer"
 								>
 									<Instagram size={20} />
-								</a>
-								<a
-									href="https://twitter.com/novamas"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<Twitter size={20} />
 								</a>
 							</div>
 						</div>
@@ -404,36 +504,16 @@ const Homepage = () => {
 									<Link to="/blogs">Blog</Link>
 								</li>
 								<li>
-									<Link to="/kategorije">Kategorije</Link>
-								</li>
-								<li>
 									<Link to="/o-nama">O nama</Link>
 								</li>
 								<li>
 									<Link to="/kontakt">Kontakt</Link>
 								</li>
-							</ul>
-						</div>
-
-						<div className="footer-categories">
-							<h3 className="footer-heading">Kategorije</h3>
-							<ul>
 								<li>
-									<Link to="/kategorije/modni-trendovi">Modni trendovi</Link>
+									<Link to="/projekti">Projekti</Link>
 								</li>
 								<li>
-									<Link to="/kategorije/stylish-bebe">Stylish bebe</Link>
-								</li>
-								<li>
-									<Link to="/kategorije/djecja-odjeca">Dječja odjeća</Link>
-								</li>
-								<li>
-									<Link to="/kategorije/modna-inspiracija">
-										Modna inspiracija
-									</Link>
-								</li>
-								<li>
-									<Link to="/kategorije/savjeti">Savjeti</Link>
+									<Link to="/galerija">Galerija</Link>
 								</li>
 							</ul>
 						</div>
