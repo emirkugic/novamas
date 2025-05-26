@@ -48,3 +48,37 @@
 .post-content p {
 	margin-bottom: 16px;
 }
+
+/* ✅ Gallery Styling */
+.post-content .wp-block-gallery {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	justify-content: center;
+	margin: 20px 0;
+	padding: 0;
+	list-style: none;
+}
+
+.post-content .wp-block-gallery .wp-block-image {
+	flex: 1 1 calc(33.333% - 10px);
+	box-sizing: border-box;
+}
+
+.post-content .wp-block-gallery .wp-block-image img {
+	width: 100%;
+	height: auto;
+	border-radius: 8px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+	.post-content .wp-block-gallery .wp-block-image {
+		flex: 1 1 calc(50% - 10px);
+	}
+}
+@media (max-width: 480px) {
+	.post-content .wp-block-gallery .wp-block-image {
+		flex: 1 1 100%;
+	}
+}
