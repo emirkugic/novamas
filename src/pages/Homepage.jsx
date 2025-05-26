@@ -5,6 +5,7 @@ const Homepage = () => {
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [posts, setPosts] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	useEffect(() => {
 		const handleScroll = () => {
