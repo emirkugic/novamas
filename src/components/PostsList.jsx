@@ -57,7 +57,7 @@ const PostsList = ({ posts, loading, limitExcerpt, getImageForPost }) => {
 				)}
 
 				<div className="view-all-container">
-					<Link to="/blogs" className="btn btn-primary">
+					<Link to="/blogovi" className="btn btn-primary">
 						Svi članci
 					</Link>
 				</div>

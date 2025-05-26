@@ -19,11 +19,8 @@ const Hero = () => {
 						vaše mališane
 					</p>
 					<div className="hero-buttons">
-						<Link to="/blogs" className="btn btn-primary">
-							Istraži blog
-						</Link>
-						<Link to="/kategorije" className="btn btn-outline">
-							Kategorije
+						<Link to="/blogovi" className="btn btn-primary">
+							Istraži blogove
 						</Link>
 					</div>
 				</div>

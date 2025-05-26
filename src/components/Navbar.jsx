@@ -27,7 +27,7 @@ const Navbar = () => {
 						<Link to="/" className="nav-link">
 							Početna
 						</Link>
-						<Link to="/blogs" className="nav-link">
+						<Link to="/blogovi" className="nav-link">
 							Blogovi
 						</Link>
 						<Link to="/o-nama" className="nav-link">

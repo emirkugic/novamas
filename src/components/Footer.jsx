@@ -42,7 +42,7 @@ const Footer = () => {
 								<Link to="/">Početna</Link>
 							</li>
 							<li>
-								<Link to="/blogs">Blog</Link>
+								<Link to="/blogovi">Blog</Link>
 							</li>
 							<li>
 								<Link to="/o-nama">O nama</Link>
