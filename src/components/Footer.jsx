@@ -64,7 +64,7 @@ const Footer = () => {
 				<div className="footer-bottom">
 					<p className="copyright">
 						&copy; {new Date().getFullYear()} NovamaS. Sva prava zadržana. |
-						Izradio{" "}
+						Pravio{" "}
 						<a
 							href="https://araneum.ba"
 							target="_blank"
