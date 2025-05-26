@@ -45,7 +45,7 @@ const Post = () => {
 						fetchRelatedPosts(data[0].categories[0], data[0].id);
 					}
 				} else {
-					setError("Post not found");
+					setError("Blog nije pronađen.");
 				}
 				setLoading(false);
 			})

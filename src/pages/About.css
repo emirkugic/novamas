@@ -1,0 +1,488 @@
+/* About.css */
+.about-page {
+	padding-top: 80px; /* Space for fixed navbar */
+}
+
+/* Hero Section */
+.about-hero {
+	background-color: var(--primary);
+	color: var(--white);
+	padding: 5rem 0;
+	text-align: center;
+	position: relative;
+	overflow: hidden;
+}
+
+.about-hero::before,
+.about-hero::after {
+	content: "";
+	position: absolute;
+	width: 300px;
+	height: 300px;
+	border-radius: 50%;
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.about-hero::before {
+	top: -150px;
+	right: -150px;
+}
+
+.about-hero::after {
+	bottom: -150px;
+	left: -150px;
+}
+
+.about-hero-content {
+	position: relative;
+	z-index: 1;
+	max-width: 700px;
+	margin: 0 auto;
+}
+
+.about-hero h1 {
+	font-family: var(--font-display);
+	font-size: 3.5rem;
+	font-weight: 700;
+	margin-bottom: 1.5rem;
+	text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hero-line {
+	width: 80px;
+	height: 3px;
+	background-color: var(--white);
+	margin: 0 auto 2rem;
+}
+
+.about-hero p {
+	font-size: 1.2rem;
+	line-height: 1.7;
+	max-width: 600px;
+	margin: 0 auto;
+	opacity: 0.9;
+}
+
+/* Intro Section */
+.about-section {
+	padding: 5rem 0;
+	background-color: var(--white);
+}
+
+.about-intro {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 4rem;
+	align-items: center;
+}
+
+.about-intro-content h2 {
+	font-family: var(--font-display);
+	font-size: 2.5rem;
+	font-weight: 600;
+	color: var(--secondary);
+	margin-bottom: 2rem;
+	position: relative;
+}
+
+.about-intro-content h2::after {
+	content: "";
+	position: absolute;
+	bottom: -15px;
+	left: 0;
+	width: 60px;
+	height: 3px;
+	background-color: var(--primary);
+}
+
+.about-intro-content p {
+	font-size: 1.1rem;
+	line-height: 1.8;
+	color: var(--text-light);
+	margin-bottom: 1.5rem;
+}
+
+.about-intro-image {
+	border-radius: var(--radius);
+	overflow: hidden;
+	box-shadow: var(--shadow-card);
+	position: relative;
+}
+
+.about-intro-image::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(
+		135deg,
+		rgba(255, 20, 147, 0.2) 0%,
+		rgba(255, 20, 147, 0) 60%
+	);
+	z-index: 1;
+}
+
+.about-intro-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.about-intro-image:hover img {
+	transform: scale(1.05);
+}
+
+/* Values Section */
+.about-values {
+	padding: 5rem 0;
+	background-color: var(--background-light);
+}
+
+.values-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 2rem;
+	margin-top: 3rem;
+}
+
+.value-card {
+	background-color: var(--white);
+	border-radius: var(--radius);
+	padding: 2.5rem 2rem;
+	text-align: center;
+	box-shadow: var(--shadow-light);
+	transition: var(--transition);
+	border-top: 4px solid var(--primary);
+}
+
+.value-card:hover {
+	transform: translateY(-10px);
+	box-shadow: var(--shadow-card);
+}
+
+.value-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 70px;
+	height: 70px;
+	background-color: rgba(255, 20, 147, 0.1);
+	border-radius: 50%;
+	margin: 0 auto 1.5rem;
+	color: var(--primary);
+	transition: var(--transition);
+}
+
+.value-card:hover .value-icon {
+	background-color: var(--primary);
+	color: var(--white);
+	transform: scale(1.1);
+}
+
+.value-card h3 {
+	font-family: var(--font-display);
+	font-size: 1.3rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+	color: var(--secondary);
+}
+
+.value-card p {
+	color: var(--text-light);
+	line-height: 1.7;
+}
+
+/* Team Section */
+.about-team {
+	padding: 5rem 0;
+	background-color: var(--white);
+}
+
+.team-content {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 4rem;
+	align-items: center;
+	margin-top: 3rem;
+}
+
+.team-image {
+	border-radius: var(--radius);
+	overflow: hidden;
+	box-shadow: var(--shadow-card);
+	position: relative;
+}
+
+.team-image img {
+	width: 100%;
+	height: auto;
+	display: block;
+	transition: transform 0.5s ease;
+}
+
+.team-description {
+	padding-left: 2rem;
+}
+
+.team-description p {
+	font-size: 1.1rem;
+	line-height: 1.8;
+	color: var(--text-light);
+	margin-bottom: 1.5rem;
+}
+
+/* Achievements Section */
+.about-achievements {
+	padding: 5rem 0;
+	background-color: var(--background-pink);
+}
+
+.achievements-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 2rem;
+	margin-top: 3rem;
+}
+
+.achievement-card {
+	background-color: var(--white);
+	border-radius: var(--radius);
+	padding: 2rem;
+	box-shadow: var(--shadow-light);
+	transition: var(--transition);
+	position: relative;
+	overflow: hidden;
+}
+
+.achievement-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 4px;
+	height: 100%;
+	background: linear-gradient(
+		to bottom,
+		var(--primary) 0%,
+		var(--primary-light) 100%
+	);
+}
+
+.achievement-card:hover {
+	transform: translateY(-8px);
+	box-shadow: var(--shadow-card);
+}
+
+.achievement-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 50px;
+	height: 50px;
+	background-color: rgba(255, 20, 147, 0.1);
+	border-radius: 50%;
+	margin-bottom: 1.5rem;
+	color: var(--primary);
+}
+
+.achievement-card h3 {
+	font-family: var(--font-display);
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+	color: var(--secondary);
+}
+
+.achievement-card p {
+	color: var(--text-light);
+	line-height: 1.7;
+}
+
+/* Benefits Section */
+.about-benefits {
+	padding: 5rem 0;
+	background-color: var(--white);
+}
+
+.benefits-content {
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+.benefits-content h2 {
+	font-family: var(--font-display);
+	font-size: 2.5rem;
+	font-weight: 600;
+	color: var(--secondary);
+	margin-bottom: 3rem;
+	text-align: center;
+	position: relative;
+}
+
+.benefits-content h2::after {
+	content: "";
+	position: absolute;
+	bottom: -15px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 80px;
+	height: 3px;
+	background-color: var(--primary);
+}
+
+.benefits-list {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.benefits-list li {
+	display: flex;
+	align-items: flex-start;
+	gap: 1.5rem;
+	padding: 1.5rem;
+	background-color: var(--background-light);
+	border-radius: var(--radius);
+	transition: var(--transition);
+}
+
+.benefits-list li:hover {
+	transform: translateX(10px);
+	box-shadow: var(--shadow-light);
+	background-color: var(--background-pink);
+}
+
+.benefit-check {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 30px;
+	height: 30px;
+	background-color: var(--primary);
+	color: var(--white);
+	border-radius: 50%;
+	font-size: 1rem;
+	font-weight: bold;
+	margin-top: 0.2rem;
+}
+
+.benefit-text h4 {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--secondary);
+	margin-bottom: 0.5rem;
+}
+
+.benefit-text p {
+	color: var(--text-light);
+	line-height: 1.7;
+}
+
+/* CTA Section */
+.about-cta {
+	padding: 5rem 0;
+	background-color: var(--background-pink);
+}
+
+.cta-content {
+	max-width: 700px;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.cta-content h2 {
+	font-family: var(--font-display);
+	font-size: 2.5rem;
+	font-weight: 600;
+	color: var(--secondary);
+	margin-bottom: 1.5rem;
+}
+
+.cta-content p {
+	font-size: 1.1rem;
+	line-height: 1.8;
+	color: var(--text-light);
+	margin-bottom: 2.5rem;
+}
+
+.cta-buttons {
+	display: flex;
+	justify-content: center;
+	gap: 1.5rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+	.about-hero h1 {
+		font-size: 3rem;
+	}
+
+	.about-intro-content h2,
+	.benefits-content h2,
+	.cta-content h2 {
+		font-size: 2.2rem;
+	}
+
+	.team-content {
+		gap: 3rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.about-intro,
+	.team-content {
+		grid-template-columns: 1fr;
+		gap: 3rem;
+	}
+
+	.team-description {
+		padding-left: 0;
+	}
+
+	.about-hero h1 {
+		font-size: 2.5rem;
+	}
+
+	.about-hero p {
+		font-size: 1.1rem;
+	}
+
+	.about-intro-content h2,
+	.benefits-content h2,
+	.cta-content h2 {
+		font-size: 2rem;
+	}
+
+	.value-card,
+	.achievement-card {
+		padding: 2rem 1.5rem;
+	}
+}
+
+@media (max-width: 576px) {
+	.about-hero h1 {
+		font-size: 2.2rem;
+	}
+
+	.about-intro-content h2,
+	.benefits-content h2,
+	.cta-content h2 {
+		font-size: 1.8rem;
+	}
+
+	.values-grid,
+	.achievements-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.benefits-list li {
+		padding: 1.25rem;
+	}
+
+	.benefit-text h4 {
+		font-size: 1.1rem;
+	}
+}
