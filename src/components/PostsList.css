@@ -1,0 +1,136 @@
+/* PostsList.css */
+.latest-posts {
+	padding: 6rem 0;
+}
+
+.posts-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 2.5rem;
+	margin-bottom: 3rem;
+}
+
+.post-card {
+	background-color: var(--white);
+	border-radius: var(--radius);
+	overflow: hidden;
+	box-shadow: var(--shadow-light);
+	transition: var(--transition);
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	border: 1px solid rgba(255, 20, 147, 0.05);
+}
+
+.post-card:hover {
+	transform: translateY(-8px);
+	box-shadow: var(--shadow-card);
+	border-color: rgba(255, 20, 147, 0.1);
+}
+
+.post-image {
+	height: 220px;
+	overflow: hidden;
+	position: relative;
+}
+
+.post-image::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 0) 70%,
+		rgba(0, 0, 0, 0.2) 100%
+	);
+	z-index: 1;
+	opacity: 0;
+	transition: var(--transition);
+}
+
+.post-card:hover .post-image::after {
+	opacity: 1;
+}
+
+.post-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: var(--transition);
+}
+
+.post-card:hover .post-image img {
+	transform: scale(1.05);
+}
+
+.post-content {
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+
+.post-title {
+	font-family: var(--font-display);
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: var(--secondary);
+	margin-bottom: 1rem;
+	line-height: 1.4;
+}
+
+.post-excerpt {
+	margin-bottom: 1.5rem;
+	flex-grow: 1;
+}
+
+.post-excerpt p {
+	margin: 0;
+	line-height: 1.7;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	font-size: 0.95rem;
+	color: var(--text-light);
+}
+
+.post-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.9rem;
+}
+
+.post-date {
+	color: var(--text-light);
+}
+
+.read-more {
+	color: var(--primary);
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	transition: var(--transition);
+}
+
+.post-card:hover .read-more {
+	gap: 0.5rem;
+}
+
+.view-all-container {
+	text-align: center;
+	margin-top: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.posts-grid {
+		grid-template-columns: 1fr;
+	}
+}
