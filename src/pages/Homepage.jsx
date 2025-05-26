@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+	Menu,
+	X,
+	Search,
+	Instagram,
+	Facebook,
+	Twitter,
+	ArrowRight,
+	ChevronDown,
+} from "lucide-react";
 import "./Homepage.css";
 
 const Homepage = () => {
 	const [isScrolled, setIsScrolled] = useState(false);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [posts, setPosts] = useState([]);
 	const [loading, setLoading] = useState(true);
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [featuredPost, setFeaturedPost] = useState(null);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -16,217 +28,330 @@ const Homepage = () => {
 	}, []);
 
 	useEffect(() => {
-		// Simulacija učitavanja blogova - kasnije će se povezati sa WordPress API
-		setTimeout(() => {
-			setPosts([
-				{
-					id: 1,
-					title: "Proljetni trendovi za mališane",
-					excerpt:
-						"Otkrijte najnovije modne trendove za djecu ove sezone. Šarene boje, udobni materijali i praktični komadi.",
-					image:
-						"https://images.unsplash.com/photo-1519457431-44ccd64a579b?w=800",
-					date: "15. maj 2024",
-					category: "Moda",
-				},
-				{
-					id: 2,
-					title: "Kako fotografisati djecu kao profesionalac",
-					excerpt:
-						"Savjeti i trikovi za savršene fotografije vaših mališana. Od osvjetljenja do poziranja.",
-					image:
-						"https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=800",
-					date: "12. maj 2024",
-					category: "Fotografija",
-				},
-				{
-					id: 3,
-					title: "Ljetna kolekcija 2024",
-					excerpt:
-						"Ekskluzivan pregled najnovije ljetne kolekcije. Lagani materijali, veseli printovi i udobnost na prvom mjestu.",
-					image:
-						"https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=800",
-					date: "10. maj 2024",
-					category: "Kolekcija",
-				},
-			]);
-			setLoading(false);
-		}, 1000);
+		// Fetch posts from WordPress backend
+		fetch("https://novamasblog.com/wp-json/wp/v2/posts?per_page=6&_embed")
+			.then((res) => res.json())
+			.then((data) => {
+				if (data && data.length > 0) {
+					setFeaturedPost(data[0]);
+					setPosts(data.slice(1));
+				}
+				setLoading(false);
+			})
+			.catch((error) => {
+				console.error("Error fetching blog posts:", error);
+				setLoading(false);
+			});
 	}, []);
+
+	const getImageUrl = (post) => {
+		if (
+			post._embedded &&
+			post._embedded["wp:featuredmedia"] &&
+			post._embedded["wp:featuredmedia"][0]
+		) {
+			return post._embedded["wp:featuredmedia"][0].source_url;
+		}
+		return "https://images.unsplash.com/photo-1544476915-ed1370594142?q=80&w=1287&auto=format&fit=crop";
+	};
 
 	return (
 		<div className="homepage">
 			{/* Navigation */}
-			<nav className={`navbar ${isScrolled ? "scrolled" : ""}`}>
-				<div className="nav-container">
-					<div className="logo">NovamaS</div>
-					<ul className="nav-menu">
-						<li>
-							<a href="/">Početna</a>
-						</li>
-						<li>
-							<a href="/o-nama">O nama</a>
-						</li>
-						<li>
-							<a href="/modeli">Modeli</a>
-						</li>
-						<li>
-							<a href="/blog">Blog</a>
-						</li>
-						<li>
-							<a href="/kontakt">Kontakt</a>
-						</li>
-					</ul>
-					<div className="menu-toggle">
-						<span></span>
-						<span></span>
-						<span></span>
-					</div>
+			<header className={`header ${isScrolled ? "scrolled" : ""}`}>
+				<div className="container">
+					<nav className="navbar">
+						<Link to="/" className="logo">
+							<img src="/logo.webp" alt="NovamaS" />
+						</Link>
+
+						<div className={`nav-links ${mobileMenuOpen ? "active" : ""}`}>
+							<Link to="/" className="nav-link">
+								Početna
+							</Link>
+							<Link to="/kategorije" className="nav-link">
+								Kategorije <ChevronDown size={16} />
+							</Link>
+							<Link to="/blogs" className="nav-link">
+								Blog
+							</Link>
+							<Link to="/o-nama" className="nav-link">
+								O nama
+							</Link>
+							<Link to="/kontakt" className="nav-link">
+								Kontakt
+							</Link>
+						</div>
+
+						<div className="nav-right">
+							<button className="search-btn" aria-label="Pretraži">
+								<Search size={20} />
+							</button>
+							<button
+								className="menu-toggle"
+								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+								aria-label={mobileMenuOpen ? "Zatvori meni" : "Otvori meni"}
+							>
+								{mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+							</button>
+						</div>
+					</nav>
 				</div>
-			</nav>
+			</header>
 
 			{/* Hero Section */}
 			<section className="hero">
 				<div className="hero-image">
-					<img src="/cover.jpg" alt="NovamaS Kids Fashion" />
-					<div className="hero-overlay"></div>
+					<img src="/cover.jpg" alt="NovamaS dječija moda" />
 				</div>
-				<div className="hero-content">
-					<h1 className="hero-title">NovamaS</h1>
-					<p className="hero-subtitle">Gdje moda susreće maštu</p>
-					<p className="hero-description">
-						Otkrijte svijet dječije mode kroz naš blog. Inspiracija, savjeti i
-						najnoviji trendovi za vaše mališane.
-					</p>
-					<button className="hero-button">Istražite kolekciju</button>
+				<div className="container">
+					<div className="hero-content">
+						<h1>
+							<span className="hero-brand">NovamaS</span>
+							<span className="hero-tagline">Svijet dječije mode</span>
+						</h1>
+						<p className="hero-description">
+							Ekskluzivni odabir najnovijih kolekcija, trendova i inspiracije za
+							vaše mališane
+						</p>
+						<div className="hero-buttons">
+							<Link to="/blogs" className="btn btn-primary">
+								Istraži blog
+							</Link>
+							<Link to="/kategorije" className="btn btn-outline">
+								Kategorije
+							</Link>
+						</div>
+					</div>
 				</div>
 			</section>
 
-			{/* Introduction */}
-			<section className="intro">
-				<div className="container">
-					<h2 className="section-title">Dobrodošli u svijet NovamaS</h2>
-					<p className="intro-text">
-						NovamaS je više od bloga - mi smo zajednica koja slavi dječiju modu,
-						kreativnost i bezbrižnost. Pratite nas na putovanju kroz najnovije
-						trendove, praktične savjete i inspirativne priče.
-					</p>
-				</div>
-			</section>
+			{/* Featured Post */}
+			{!loading && featuredPost && (
+				<section className="featured-post">
+					<div className="container">
+						<div className="section-header">
+							<h2 className="section-title">Izdvojeni članak</h2>
+							<div className="section-line"></div>
+						</div>
+						<div className="featured-card">
+							<div className="featured-image">
+								<img
+									src={getImageUrl(featuredPost)}
+									alt={featuredPost.title.rendered}
+								/>
+							</div>
+							<div className="featured-content">
+								<div className="post-category">Novi trend</div>
+								<h3
+									className="featured-title"
+									dangerouslySetInnerHTML={{
+										__html: featuredPost.title.rendered,
+									}}
+								/>
+								<div
+									className="featured-excerpt"
+									dangerouslySetInnerHTML={{
+										__html: featuredPost.excerpt.rendered,
+									}}
+								/>
+								<Link
+									to={`/post/${featuredPost.slug}`}
+									className="btn btn-text"
+								>
+									Pročitaj više <ArrowRight size={16} />
+								</Link>
+							</div>
+						</div>
+					</div>
+				</section>
+			)}
 
 			{/* Latest Posts */}
 			<section className="latest-posts">
 				<div className="container">
-					<h2 className="section-title">Najnoviji članci</h2>
+					<div className="section-header">
+						<h2 className="section-title">Najnoviji članci</h2>
+						<div className="section-line"></div>
+					</div>
+
 					{loading ? (
-						<div className="loading">
+						<div className="loading-spinner">
 							<div className="spinner"></div>
 							<p>Učitavanje...</p>
 						</div>
 					) : (
 						<div className="posts-grid">
 							{posts.map((post) => (
-								<article key={post.id} className="post-card">
+								<Link
+									to={`/post/${post.slug}`}
+									className="post-card"
+									key={post.id}
+								>
 									<div className="post-image">
-										<img src={post.image} alt={post.title} />
-										<div className="post-category">{post.category}</div>
+										<img src={getImageUrl(post)} alt={post.title.rendered} />
 									</div>
 									<div className="post-content">
-										<h3 className="post-title">{post.title}</h3>
-										<p className="post-excerpt">{post.excerpt}</p>
+										<h3
+											className="post-title"
+											dangerouslySetInnerHTML={{ __html: post.title.rendered }}
+										/>
+										<div
+											className="post-excerpt"
+											dangerouslySetInnerHTML={{
+												__html: post.excerpt.rendered,
+											}}
+										/>
 										<div className="post-meta">
-											<span className="post-date">{post.date}</span>
-											<a href={`/post/${post.id}`} className="read-more">
-												Pročitaj više →
-											</a>
+											<span className="post-date">
+												{new Date(post.date).toLocaleDateString("bs-BA", {
+													day: "numeric",
+													month: "long",
+													year: "numeric",
+												})}
+											</span>
+											<span className="read-more">
+												Pročitaj više <ArrowRight size={14} />
+											</span>
 										</div>
 									</div>
-								</article>
+								</Link>
 							))}
 						</div>
 					)}
+
+					<div className="view-all-container">
+						<Link to="/blogs" className="btn btn-primary">
+							Svi članci
+						</Link>
+					</div>
 				</div>
 			</section>
 
-			{/* Features */}
-			<section className="features">
+			{/* Categories Section */}
+			<section className="categories-section">
 				<div className="container">
-					<h2 className="section-title">Zašto NovamaS?</h2>
-					<div className="features-grid">
-						<div className="feature">
-							<div className="feature-icon">👗</div>
-							<h3>Najnoviji trendovi</h3>
-							<p>
-								Budite u toku sa najnovijim modnim trendovima za djecu iz
-								cijelog svijeta.
-							</p>
-						</div>
-						<div className="feature">
-							<div className="feature-icon">📸</div>
-							<h3>Profesionalne fotografije</h3>
-							<p>
-								Visokokvalitetne fotografije koje inspirišu i pokazuju modu u
-								najljepšem svjetlu.
-							</p>
-						</div>
-						<div className="feature">
-							<div className="feature-icon">💡</div>
-							<h3>Korisni savjeti</h3>
-							<p>
-								Praktični savjeti za roditelje o odijevanju, kombinovanju i
-								održavanju garderobe.
-							</p>
-						</div>
-						<div className="feature">
-							<div className="feature-icon">🌈</div>
-							<h3>Kreativnost i mašta</h3>
-							<p>
-								Podsticanje dječije kreativnosti kroz modu i samopouzdano
-								izražavanje.
-							</p>
-						</div>
+					<div className="section-header">
+						<h2 className="section-title">Kategorije</h2>
+						<div className="section-line"></div>
+					</div>
+
+					<div className="categories-grid">
+						<Link to="/kategorije/modni-trendovi" className="category-card">
+							<div className="category-image">
+								<img
+									src="https://images.unsplash.com/photo-1611042553484-d61f84e2424d?q=80&w=1170&auto=format&fit=crop"
+									alt="Modni trendovi"
+								/>
+							</div>
+							<h3 className="category-title">Modni trendovi</h3>
+						</Link>
+
+						<Link to="/kategorije/stylish-bebe" className="category-card">
+							<div className="category-image">
+								<img
+									src="https://images.unsplash.com/photo-1540479859555-17af45c78602?q=80&w=1170&auto=format&fit=crop"
+									alt="Stylish bebe"
+								/>
+							</div>
+							<h3 className="category-title">Stylish bebe</h3>
+						</Link>
+
+						<Link to="/kategorije/djecja-odjeca" className="category-card">
+							<div className="category-image">
+								<img
+									src="https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?q=80&w=1172&auto=format&fit=crop"
+									alt="Dječja odjeća"
+								/>
+							</div>
+							<h3 className="category-title">Dječja odjeća</h3>
+						</Link>
+
+						<Link to="/kategorije/modna-inspiracija" className="category-card">
+							<div className="category-image">
+								<img
+									src="https://images.unsplash.com/photo-1506919258185-6078bba55d2a?q=80&w=1115&auto=format&fit=crop"
+									alt="Modna inspiracija"
+								/>
+							</div>
+							<h3 className="category-title">Modna inspiracija</h3>
+						</Link>
 					</div>
 				</div>
 			</section>
 
 			{/* Instagram Feed */}
-			<section className="instagram">
+			<section className="instagram-section">
 				<div className="container">
-					<h2 className="section-title">Pratite nas na Instagramu</h2>
+					<div className="section-header instagram-header">
+						<h2 className="section-title">Instagram</h2>
+						<div className="section-line"></div>
+						<p className="instagram-tagline">
+							Pratite nas za više modne inspiracije
+						</p>
+					</div>
+
 					<div className="instagram-grid">
-						{[1, 2, 3, 4, 5, 6].map((i) => (
-							<div key={i} className="instagram-item">
-								<img
-									src={`https://images.unsplash.com/photo-${
-										1500000000000 + i * 1000
-									}?w=400&h=400&fit=crop`}
-									alt={`Instagram ${i}`}
-								/>
+						{[
+							"https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?q=80&w=1169&auto=format&fit=crop",
+							"https://images.unsplash.com/photo-1617331721458-bd3bd3f9c7f8?q=80&w=1287&auto=format&fit=crop",
+							"https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=1228&auto=format&fit=crop",
+							"https://images.unsplash.com/photo-1536640712-4d4c36ff0e4e?q=80&w=1285&auto=format&fit=crop",
+							"https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=1228&auto=format&fit=crop",
+							"https://images.unsplash.com/photo-1626251376234-ad378500148a?q=80&w=1287&auto=format&fit=crop",
+						].map((url, index) => (
+							<a
+								href="https://instagram.com/novamas"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="instagram-item"
+								key={index}
+							>
+								<img src={url} alt={`Instagram ${index + 1}`} />
 								<div className="instagram-overlay">
-									<span>❤️ {Math.floor(Math.random() * 500) + 100}</span>
+									<Instagram size={24} />
 								</div>
-							</div>
+							</a>
 						))}
 					</div>
-					<a href="https://instagram.com/novamas" className="instagram-link">
-						@novamas_kids
+
+					<a
+						href="https://instagram.com/novamas"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="instagram-link"
+					>
+						<Instagram size={18} />
+						<span>@novamas_kids</span>
 					</a>
 				</div>
 			</section>
 
-			{/* Newsletter */}
-			<section className="newsletter">
+			{/* Newsletter Section */}
+			<section className="newsletter-section">
 				<div className="container">
-					<div className="newsletter-content">
-						<h2>Prijavite se na naš newsletter</h2>
-						<p>
-							Budite prvi koji će saznati za nove kolekcije, ekskluzivne ponude
-							i modne savjete.
-						</p>
-						<div className="newsletter-form">
-							<input type="email" placeholder="Vaša email adresa" required />
-							<button type="button">Prijavite se</button>
+					<div className="newsletter-container">
+						<div className="newsletter-content">
+							<h2 className="newsletter-title">
+								Pridružite se našoj zajednici
+							</h2>
+							<p className="newsletter-description">
+								Pretplatite se na naš newsletter i budite prvi koji će saznati
+								za nove trendove, savjete i ekskluzivne sadržaje.
+							</p>
 						</div>
+
+						<form className="newsletter-form">
+							<input
+								type="email"
+								placeholder="Unesite vašu email adresu"
+								className="newsletter-input"
+								required
+							/>
+							<button type="submit" className="btn btn-primary">
+								Pretplatite se
+							</button>
+						</form>
 					</div>
 				</div>
 			</section>
@@ -234,68 +359,97 @@ const Homepage = () => {
 			{/* Footer */}
 			<footer className="footer">
 				<div className="container">
-					<div className="footer-content">
-						<div className="footer-section">
-							<h3>NovamaS</h3>
-							<p>
-								Gdje moda susreće maštu. Vaš pouzdani izvor za dječiju modu i
-								inspiraciju.
+					<div className="footer-grid">
+						<div className="footer-about">
+							<Link to="/" className="footer-logo">
+								<img src="/logo.webp" alt="NovamaS" />
+							</Link>
+							<p className="footer-description">
+								NovamaS je premium destinacija za dječiju modu i modne savjete.
+								Otkrijte najnovije trendove, kolekcije i inspiraciju za vaše
+								mališane.
 							</p>
 							<div className="social-links">
-								<a href="#" aria-label="Facebook">
-									f
+								<a
+									href="https://facebook.com/novamas"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Facebook size={20} />
 								</a>
-								<a href="#" aria-label="Instagram">
-									i
+								<a
+									href="https://instagram.com/novamas"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Instagram size={20} />
 								</a>
-								<a href="#" aria-label="Pinterest">
-									p
+								<a
+									href="https://twitter.com/novamas"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Twitter size={20} />
 								</a>
 							</div>
 						</div>
-						<div className="footer-section">
-							<h4>Brzi linkovi</h4>
+
+						<div className="footer-links">
+							<h3 className="footer-heading">Brzi linkovi</h3>
 							<ul>
 								<li>
-									<a href="/o-nama">O nama</a>
+									<Link to="/">Početna</Link>
 								</li>
 								<li>
-									<a href="/modeli">Naši modeli</a>
+									<Link to="/blogs">Blog</Link>
 								</li>
 								<li>
-									<a href="/blog">Blog</a>
+									<Link to="/kategorije">Kategorije</Link>
 								</li>
 								<li>
-									<a href="/kontakt">Kontakt</a>
+									<Link to="/o-nama">O nama</Link>
+								</li>
+								<li>
+									<Link to="/kontakt">Kontakt</Link>
 								</li>
 							</ul>
 						</div>
-						<div className="footer-section">
-							<h4>Kategorije</h4>
+
+						<div className="footer-categories">
+							<h3 className="footer-heading">Kategorije</h3>
 							<ul>
 								<li>
-									<a href="/kategorija/moda">Moda</a>
+									<Link to="/kategorije/modni-trendovi">Modni trendovi</Link>
 								</li>
 								<li>
-									<a href="/kategorija/savjeti">Savjeti</a>
+									<Link to="/kategorije/stylish-bebe">Stylish bebe</Link>
 								</li>
 								<li>
-									<a href="/kategorija/kolekcije">Kolekcije</a>
+									<Link to="/kategorije/djecja-odjeca">Dječja odjeća</Link>
 								</li>
 								<li>
-									<a href="/kategorija/trendovi">Trendovi</a>
+									<Link to="/kategorije/modna-inspiracija">
+										Modna inspiracija
+									</Link>
+								</li>
+								<li>
+									<Link to="/kategorije/savjeti">Savjeti</Link>
 								</li>
 							</ul>
 						</div>
-						<div className="footer-section">
-							<h4>Kontakt</h4>
+
+						<div className="footer-contact">
+							<h3 className="footer-heading">Kontakt</h3>
 							<p>Email: info@novamas.ba</p>
 							<p>Telefon: +387 33 123 456</p>
-							<p>Adresa: Sarajevo, BiH</p>
+							<p>Adresa: Sarajevo, Bosna i Hercegovina</p>
 						</div>
 					</div>
+
 					<div className="footer-bottom">
-						<p>&copy; 2024 NovamaS. Sva prava zadržana.</p>
+						<p className="copyright">
+							&copy; {new Date().getFullYear()} NovamaS. Sva prava zadržana.
+						</p>
 					</div>
 				</div>
 			</footer>
