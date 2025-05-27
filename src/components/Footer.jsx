@@ -55,8 +55,8 @@ const Footer = () => {
 
 					<div className="footer-contact">
 						<h3 className="footer-heading">Kontakt</h3>
-						<p>Email: info@novamas.ba</p>
-						<p>Telefon: +387 33 123 456</p>
+						<p>Email: alma.musliovic@gmail.com</p>
+						<p>Telefon: +387 62 855 525</p>
 						<p>Adresa: Sarajevo, Bosna i Hercegovina</p>
 					</div>
 				</div>
