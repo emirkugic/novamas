@@ -47,10 +47,7 @@ const NovamasHistory = () => {
 						</div>
 					</div>
 					<div className="tips-image">
-						<img
-							src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=1972&auto=format&fit=crop"
-							alt="NovamaS kroz generacije"
-						/>
+						<img src="\kroz_historiju.webp" alt="NovamaS kroz generacije" />
 					</div>
 				</div>
 			</div>

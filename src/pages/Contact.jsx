@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
 	Phone,
 	Mail,
@@ -10,12 +10,14 @@ import {
 	User,
 	MessageSquare,
 } from "lucide-react";
+import emailjs from "@emailjs/browser";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./Contact.css";
 import "../global.css";
 
 const Contact = () => {
+	const form = useRef();
 	const [formData, setFormData] = useState({
 		name: "",
 		email: "",
@@ -25,6 +27,7 @@ const Contact = () => {
 
 	const [formErrors, setFormErrors] = useState({});
 	const [formSubmitted, setFormSubmitted] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -77,22 +80,41 @@ const Contact = () => {
 		e.preventDefault();
 
 		if (validateForm()) {
-			// Form submission would go here in a real implementation
-			console.log("Form submitted:", formData);
-			setFormSubmitted(true);
+			setIsSubmitting(true);
 
-			// Reset form
-			setFormData({
-				name: "",
-				email: "",
-				subject: "",
-				message: "",
-			});
+			// EmailJS configuration
+			// Replace these with your actual EmailJS service ID, template ID, and public key
+			const serviceId = "YOUR_EMAILJS_SERVICE_ID";
+			const templateId = "YOUR_EMAILJS_TEMPLATE_ID";
+			const publicKey = "YOUR_EMAILJS_PUBLIC_KEY";
 
-			// Hide success message after 5 seconds
-			setTimeout(() => {
-				setFormSubmitted(false);
-			}, 5000);
+			emailjs.sendForm(serviceId, templateId, form.current, publicKey).then(
+				(result) => {
+					console.log("Email successfully sent!", result.text);
+					setFormSubmitted(true);
+					setIsSubmitting(false);
+
+					// Reset form
+					setFormData({
+						name: "",
+						email: "",
+						subject: "",
+						message: "",
+					});
+
+					// Hide success message after 5 seconds
+					setTimeout(() => {
+						setFormSubmitted(false);
+					}, 5000);
+				},
+				(error) => {
+					console.error("Failed to send email:", error.text);
+					setIsSubmitting(false);
+					alert(
+						"Došlo je do greške prilikom slanja poruke. Molimo pokušajte ponovo ili nas kontaktirajte direktno putem telefona ili emaila."
+					);
+				}
+			);
 		}
 	};
 
@@ -153,6 +175,16 @@ const Contact = () => {
 													</p>
 												</div>
 											</div>
+
+											<div className="contact-method">
+												<div className="contact-icon">
+													<MapPin size={24} />
+												</div>
+												<div className="contact-details">
+													<h3>Adresa</h3>
+													<p>Sarajevo, Bosna i Hercegovina</p>
+												</div>
+											</div>
 										</div>
 
 										<div className="contact-socials">
@@ -203,7 +235,11 @@ const Contact = () => {
 									</div>
 								)}
 
-								<form className="contact-form" onSubmit={handleSubmit}>
+								<form
+									className="contact-form"
+									ref={form}
+									onSubmit={handleSubmit}
+								>
 									<div className="form-group">
 										<label htmlFor="name">
 											<User size={16} />
@@ -282,10 +318,22 @@ const Contact = () => {
 
 									<button
 										type="submit"
-										className="btn btn-primary submit-button"
+										className={`btn btn-primary submit-button ${
+											isSubmitting ? "submitting" : ""
+										}`}
+										disabled={isSubmitting}
 									>
-										<Send size={18} />
-										<span>Pošalji poruku</span>
+										{isSubmitting ? (
+											<>
+												<div className="button-spinner"></div>
+												<span>Slanje...</span>
+											</>
+										) : (
+											<>
+												<Send size={18} />
+												<span>Pošalji poruku</span>
+											</>
+										)}
 									</button>
 								</form>
 							</div>

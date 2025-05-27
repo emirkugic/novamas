@@ -4,12 +4,12 @@ import "./InstagramFeed.css";
 
 const InstagramFeed = () => {
 	const instagramImages = [
-		"https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?q=80&w=1169&auto=format&fit=crop",
-		"https://images.unsplash.com/photo-1617331721458-bd3bd3f9c7f8?q=80&w=1287&auto=format&fit=crop",
-		"https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=1228&auto=format&fit=crop",
-		"https://images.unsplash.com/photo-1536640712-4d4c36ff0e4e?q=80&w=1285&auto=format&fit=crop",
-		"https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=1228&auto=format&fit=crop",
-		"https://images.unsplash.com/photo-1626251376234-ad378500148a?q=80&w=1287&auto=format&fit=crop",
+		"/instagram1.jpg",
+		"/instagram2.jpg",
+		"/instagram3.jpg",
+		"/instagram4.jpg",
+		"/instagram5.jpg",
+		"/instagram6.jpg",
 	];
 
 	return (
