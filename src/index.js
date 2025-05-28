@@ -1,7 +1,8 @@
 // src/index.js
 import React from "react";
-import { createRoot, hydrateRoot } from "react-dom/client";
+import { hydrate, render } from "react-dom";
 import "./index.css";
+import "./global.css";
 import App from "./App";
 import { HelmetProvider } from "react-helmet-async";
 
@@ -9,21 +10,26 @@ const rootElement = document.getElementById("root");
 
 // Handle both CSR and SSR/prerendered cases
 if (rootElement.hasChildNodes()) {
-	hydrateRoot(
-		rootElement,
+	// We're hydrating a server-rendered app
+	hydrate(
 		<React.StrictMode>
 			<HelmetProvider>
 				<App />
 			</HelmetProvider>
-		</React.StrictMode>
+		</React.StrictMode>,
+		rootElement
 	);
 } else {
-	const root = createRoot(rootElement);
-	root.render(
+	// We're rendering a client-side only app
+	render(
 		<React.StrictMode>
 			<HelmetProvider>
 				<App />
 			</HelmetProvider>
-		</React.StrictMode>
+		</React.StrictMode>,
+		rootElement
 	);
 }
+
+// This is used by react-snap for prerendering
+export default App;

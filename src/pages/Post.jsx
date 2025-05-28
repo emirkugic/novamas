@@ -26,14 +26,15 @@ const Post = () => {
 	const [relatedPosts, setRelatedPosts] = useState([]);
 	const [error, setError] = useState(null);
 	const [apiError, setApiError] = useState(null);
-	// SEO metadata state
+
+	// SEO metadata state with absolute URLs
 	const [seoData, setSeoData] = useState({
 		title: "NovamaS - Modna agencija za djecu i mlade",
 		description:
 			"Ekskluzivni odabir najnovijih kolekcija, trendova i inspiracije za vaše mališane",
 		image: `${window.location.origin}/SEO_cover.jpg`,
 		url: window.location.href,
-		type: "website",
+		type: "article",
 	});
 
 	useEffect(() => {
@@ -62,79 +63,65 @@ const Post = () => {
 					setPost(postData);
 					console.log("Post Data:", postData); // Debug log
 
-					// Check if the post has SEO metadata from our plugin
-					if (postData.seo_metadata) {
-						console.log("SEO Metadata from API:", postData.seo_metadata); // Debug log
+					// Extract title and make sure it doesn't contain HTML tags
+					const title = postData.title.rendered.replace(/<\/?[^>]+(>|$)/g, "");
 
-						// Use the SEO metadata from the plugin
-						setSeoData({
-							title:
-								postData.seo_metadata.title ||
-								"NovamaS - " +
-									postData.title.rendered.replace(/<\/?[^>]+(>|$)/g, ""),
-							description: postData.seo_metadata.description || "",
-							image:
-								postData.seo_metadata.image ||
-								`${window.location.origin}/SEO_cover.jpg`,
-							url: `${window.location.origin}/post/${slug}`,
-							type: "article",
-							publishedTime: postData.date,
-							modifiedTime: postData.modified,
-						});
-					} else {
-						console.log("No SEO metadata found, using fallback extraction");
-						// Fallback: Extract SEO data manually
-						const title = postData.title.rendered.replace(
+					// Extract description from excerpt
+					let description = "";
+					if (postData.excerpt && postData.excerpt.rendered) {
+						description = postData.excerpt.rendered.replace(
 							/<\/?[^>]+(>|$)/g,
 							""
 						);
-						let description = "";
-						if (postData.excerpt && postData.excerpt.rendered) {
-							description = postData.excerpt.rendered.replace(
-								/<\/?[^>]+(>|$)/g,
-								""
-							);
-							if (description.length > 160) {
-								description = description.substring(0, 157) + "...";
-							}
+						if (description.length > 160) {
+							description = description.substring(0, 157) + "...";
 						}
-
-						// Get image (featured image or first content image)
-						let image = `${window.location.origin}/SEO_cover.jpg`; // Default
-
-						if (
-							postData._embedded &&
-							postData._embedded["wp:featuredmedia"] &&
-							postData._embedded["wp:featuredmedia"][0]
-						) {
-							image = postData._embedded["wp:featuredmedia"][0].source_url;
-							console.log("Using featured image for SEO:", image);
-						} else {
-							// Try to extract first image from content
-							const imgMatch = postData.content.rendered.match(
-								/<img[^>]+src="([^">]+)"/
-							);
-							if (imgMatch && imgMatch[1]) {
-								image = imgMatch[1];
-								// Make sure image URL is absolute
-								if (image && !image.startsWith("http")) {
-									image = `${WP_API.base.split("/wp-json")[0]}${image}`;
-								}
-								console.log("Using content image for SEO:", image);
-							}
-						}
-
-						// Update SEO data
-						setSeoData({
-							title,
-							description,
-							image,
-							url: `${window.location.origin}/post/${slug}`,
-							type: "article",
-							publishedTime: postData.date,
-							modifiedTime: postData.modified,
-						});
 					}
+
+					// Get image (featured image or first content image)
+					let image = `${window.location.origin}/SEO_cover.jpg`; // Default
+
+					if (
+						postData._embedded &&
+						postData._embedded["wp:featuredmedia"] &&
+						postData._embedded["wp:featuredmedia"][0]
+					) {
+						image = postData._embedded["wp:featuredmedia"][0].source_url;
+
+						// Ensure the image URL is absolute
+						if (image && !image.startsWith("http")) {
+							image = `${WP_API.base.split("/wp-json")[0]}${image}`;
+						}
+
+						console.log("Using featured image for SEO:", image);
+					} else {
+						// Try to extract first image from content
+						const imgMatch = postData.content.rendered.match(
+							/<img[^>]+src="([^">]+)"/
+						);
+						if (imgMatch && imgMatch[1]) {
+							image = imgMatch[1];
+							// Make sure image URL is absolute
+							if (image && !image.startsWith("http")) {
+								image = `${WP_API.base.split("/wp-json")[0]}${image}`;
+							}
+							console.log("Using content image for SEO:", image);
+						}
+					}
+
+					// Make sure URL is absolute
+					const url = `${window.location.origin}/post/${slug}`;
+
+					// Update SEO data with properly formatted values
+					setSeoData({
+						title: `${title} - NovamaS`, // Add site name for better SEO
+						description,
+						image,
+						url,
+						type: "article",
+						publishedTime: postData.date,
+						modifiedTime: postData.modified,
+					});
 
 					// After getting the post, fetch related posts from same category
 					if (postData.categories && postData.categories.length > 0) {
@@ -250,7 +237,7 @@ const Post = () => {
 	return (
 		<>
 			{/* SEO metadata - This is what social media crawlers will see */}
-			<Helmet>
+			<Helmet prioritizeSeoTags>
 				<title>{seoData.title}</title>
 				<meta name="description" content={seoData.description} />
 				<link rel="canonical" href={seoData.url} />
@@ -358,7 +345,9 @@ const Post = () => {
 											<h4>Podijelite članak</h4>
 											<div className="post-share-buttons">
 												<a
-													href={`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`}
+													href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+														seoData.url
+													)}`}
 													target="_blank"
 													rel="noopener noreferrer"
 													className="share-button facebook"
@@ -377,9 +366,10 @@ const Post = () => {
 												</a>
 												<button
 													className="share-button share"
-													onClick={() =>
-														navigator.clipboard.writeText(window.location.href)
-													}
+													onClick={() => {
+														navigator.clipboard.writeText(seoData.url);
+														alert("Link kopiran u clipboard!");
+													}}
 												>
 													<Share2 size={18} />
 													<span>Kopiraj link</span>
