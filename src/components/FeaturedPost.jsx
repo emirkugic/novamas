@@ -25,9 +25,9 @@ const FeaturedPost = ({ post, limitExcerpt, getImageForPost }) => {
 						<div className="featured-excerpt">
 							<p>{limitExcerpt(post.excerpt.rendered, 180)}</p>
 						</div>
-						<Link to={`/post/${post.slug}`} className="btn btn-text">
+						<a href={`/objave.php?slug=${post.slug}`} className="btn btn-text">
 							Pročitaj više <ArrowRight size={16} />
-						</Link>
+						</a>
 					</div>
 				</div>
 			</div>

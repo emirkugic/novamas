@@ -1,10 +1,19 @@
-# Special handling for social media crawlers
+# public/.htaccess
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
   
-  # For blog posts: If the request is from a social media crawler, use the PHP script
+  # If the request is from a social media crawler and is for a blog post, use seo.php
   RewriteCond %{REQUEST_URI} ^/post/([^/]+)/?$
   RewriteCond %{HTTP_USER_AGENT} (facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Pinterest|Slackbot|TelegramBot) [NC]
   RewriteRule ^ seo.php [L]
+  
+  # Don't rewrite PHP files or files that exist
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d [OR]
+  RewriteCond %{REQUEST_URI} \.(php|html|css|js|jpg|jpeg|png|gif|webp|ico|svg)$ [NC]
+  RewriteRule ^ - [L]
+  
+  # Send all other requests to index.html for React Router
+  RewriteRule ^ index.html [QSA,L]
 </IfModule>

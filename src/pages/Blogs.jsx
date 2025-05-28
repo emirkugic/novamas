@@ -362,8 +362,8 @@ const Blogs = () => {
 									<>
 										<div className="blogs-grid">
 											{getCurrentPosts().map((post) => (
-												<Link
-													to={`/post/${post.slug}`}
+												<a
+													href={`/objave.php?slug=${post.slug}`}
 													key={post.id}
 													className="blog-card"
 												>
@@ -405,7 +405,7 @@ const Blogs = () => {
 															<ArrowRight size={16} />
 														</div>
 													</div>
-												</Link>
+												</a>
 											))}
 										</div>
 

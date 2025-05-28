@@ -20,8 +20,8 @@ const PostsList = ({ posts, loading, limitExcerpt, getImageForPost }) => {
 				) : (
 					<div className="posts-grid">
 						{posts.map((post) => (
-							<Link
-								to={`/post/${post.slug}`}
+							<a
+								href={`/objave.php?slug=${post.slug}`}
 								className="post-card"
 								key={post.id}
 							>
@@ -51,7 +51,7 @@ const PostsList = ({ posts, loading, limitExcerpt, getImageForPost }) => {
 										</span>
 									</div>
 								</div>
-							</Link>
+							</a>
 						))}
 					</div>
 				)}
