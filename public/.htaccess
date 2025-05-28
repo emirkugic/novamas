@@ -1,0 +1,10 @@
+# Special handling for social media crawlers
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # For blog posts: If the request is from a social media crawler, use the PHP script
+  RewriteCond %{REQUEST_URI} ^/post/([^/]+)/?$
+  RewriteCond %{HTTP_USER_AGENT} (facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Pinterest|Slackbot|TelegramBot) [NC]
+  RewriteRule ^ seo.php [L]
+</IfModule>
