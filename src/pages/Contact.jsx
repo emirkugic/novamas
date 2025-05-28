@@ -1,3 +1,4 @@
+// src/pages/Contact.jsx
 import React, { useState, useRef } from "react";
 import {
 	Phone,
@@ -11,6 +12,7 @@ import {
 	MessageSquare,
 } from "lucide-react";
 import emailjs from "@emailjs/browser";
+import SEO from "../components/SEO"; // Import SEO component
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./Contact.css";
@@ -120,6 +122,12 @@ const Contact = () => {
 
 	return (
 		<>
+			{/* Add SEO component with values for Contact page */}
+			<SEO
+				title="Kontakt - NovamaS Modna Agencija"
+				description="Kontaktirajte NovamaS modnu agenciju za djecu. Javite nam se s pitanjima, prijedlozima ili kako biste rezervirali termin."
+			/>
+
 			<Navbar />
 			<div className="contact-page">
 				<div className="contact-hero">

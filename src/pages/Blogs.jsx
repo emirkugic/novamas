@@ -1,3 +1,4 @@
+// src/pages/Blogs.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -10,6 +11,7 @@ import {
 	ChevronRight,
 	BookOpen,
 } from "lucide-react";
+import SEO from "../components/SEO"; // Import SEO component
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./Blogs.css";
@@ -34,7 +36,7 @@ const Blogs = () => {
 
 		// Fetch posts
 		fetch(
-			"https://novamasblog.com/wp-json/wp/v2/posts?orderby=date&order=desc&_embed&per_page=100"
+			"https://api.novamas.ba/wp-json/wp/v2/posts?orderby=date&order=desc&_embed&per_page=100"
 		)
 			.then((res) => res.json())
 			.then((data) => {
@@ -43,7 +45,7 @@ const Blogs = () => {
 				setTotalPages(Math.ceil(data.length / postsPerPage));
 
 				// Fetch categories
-				fetch("https://novamasblog.com/wp-json/wp/v2/categories")
+				fetch("https://api.novamas.ba/wp-json/wp/v2/categories")
 					.then((res) => res.json())
 					.then((categoriesData) => {
 						setCategories(categoriesData);
@@ -199,6 +201,12 @@ const Blogs = () => {
 
 	return (
 		<>
+			{/* Add SEO component with values for Blogs page */}
+			<SEO
+				title="Blogovi - NovamaS Modna Agencija"
+				description="Istražite naše blogove o dječijoj modi, trendovima i savjetima. Pronađite inspiraciju i korisne informacije za odijevanje vaših mališana."
+			/>
+
 			<Navbar />
 			<div className="blogs-page">
 				<div className="blogs-container">

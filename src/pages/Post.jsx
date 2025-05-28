@@ -1,5 +1,7 @@
+// src/pages/Post.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
 	Calendar,
 	Clock,
@@ -21,6 +23,15 @@ const Post = () => {
 	const [loading, setLoading] = useState(true);
 	const [relatedPosts, setRelatedPosts] = useState([]);
 	const [error, setError] = useState(null);
+	// SEO metadata state
+	const [seoData, setSeoData] = useState({
+		title: "NovamaS - Modna agencija za djecu i mlade",
+		description:
+			"Ekskluzivni odabir najnovijih kolekcija, trendova i inspiracije za vaše mališane",
+		image: `${window.location.origin}/SEO_cover.jpg`,
+		url: window.location.href,
+		type: "website",
+	});
 
 	useEffect(() => {
 		// Reset scroll position when post changes
@@ -28,8 +39,8 @@ const Post = () => {
 
 		setLoading(true);
 
-		// Fetch the post by slug
-		fetch(`https://novamasblog.com/wp-json/wp/v2/posts?slug=${slug}&_embed`)
+		// Fetch the post by slug with embedded media
+		fetch(`http://api.novamas.ba/wp-json/wp/v2/posts?slug=${slug}&_embed`)
 			.then((res) => {
 				if (!res.ok) {
 					throw new Error("Failed to fetch post");
@@ -38,11 +49,84 @@ const Post = () => {
 			})
 			.then((data) => {
 				if (data.length > 0) {
-					setPost(data[0]);
+					const postData = data[0];
+					setPost(postData);
+					console.log("Post Data:", postData); // Debug log
+
+					// Check if the post has SEO metadata from our plugin
+					if (postData.seo_metadata) {
+						console.log("SEO Metadata from API:", postData.seo_metadata); // Debug log
+
+						// Use the SEO metadata from the plugin
+						setSeoData({
+							title:
+								postData.seo_metadata.title ||
+								"NovamaS - " +
+									postData.title.rendered.replace(/<\/?[^>]+(>|$)/g, ""),
+							description: postData.seo_metadata.description || "",
+							image:
+								postData.seo_metadata.image ||
+								`${window.location.origin}/SEO_cover.jpg`,
+							url: `${window.location.origin}/post/${slug}`,
+							type: "article",
+							publishedTime: postData.date,
+							modifiedTime: postData.modified,
+						});
+					} else {
+						// Fallback: Extract SEO data manually
+						const title = postData.title.rendered.replace(
+							/<\/?[^>]+(>|$)/g,
+							""
+						);
+						let description = "";
+						if (postData.excerpt && postData.excerpt.rendered) {
+							description = postData.excerpt.rendered.replace(
+								/<\/?[^>]+(>|$)/g,
+								""
+							);
+							if (description.length > 160) {
+								description = description.substring(0, 157) + "...";
+							}
+						}
+
+						// Get image (featured image or first content image)
+						let image = `${window.location.origin}/SEO_cover.jpg`; // Default
+
+						if (
+							postData._embedded &&
+							postData._embedded["wp:featuredmedia"] &&
+							postData._embedded["wp:featuredmedia"][0]
+						) {
+							image = postData._embedded["wp:featuredmedia"][0].source_url;
+						} else {
+							// Try to extract first image from content
+							const imgMatch = postData.content.rendered.match(
+								/<img[^>]+src="([^">]+)"/
+							);
+							if (imgMatch && imgMatch[1]) {
+								image = imgMatch[1];
+								// Make sure image URL is absolute
+								if (image && !image.startsWith("http")) {
+									image = `http://api.novamas.ba${image}`;
+								}
+							}
+						}
+
+						// Update SEO data
+						setSeoData({
+							title,
+							description,
+							image,
+							url: `${window.location.origin}/post/${slug}`,
+							type: "article",
+							publishedTime: postData.date,
+							modifiedTime: postData.modified,
+						});
+					}
 
 					// After getting the post, fetch related posts from same category
-					if (data[0].categories && data[0].categories.length > 0) {
-						fetchRelatedPosts(data[0].categories[0], data[0].id);
+					if (postData.categories && postData.categories.length > 0) {
+						fetchRelatedPosts(postData.categories[0], postData.id);
 					}
 				} else {
 					setError("Blog nije pronađen.");
@@ -56,9 +140,14 @@ const Post = () => {
 			});
 	}, [slug]);
 
+	// Log SEO data for debugging
+	useEffect(() => {
+		console.log("Final SEO Data:", seoData);
+	}, [seoData]);
+
 	const fetchRelatedPosts = (categoryId, currentPostId) => {
 		fetch(
-			`https://novamasblog.com/wp-json/wp/v2/posts?categories=${categoryId}&exclude=${currentPostId}&per_page=3&_embed`
+			`http://api.novamas.ba/wp-json/wp/v2/posts?categories=${categoryId}&exclude=${currentPostId}&per_page=3&_embed`
 		)
 			.then((res) => res.json())
 			.then((data) => {
@@ -71,6 +160,7 @@ const Post = () => {
 
 	// Extract featured image or first image from content
 	const getPostImage = (post) => {
+		// Check for featured image
 		if (
 			post._embedded &&
 			post._embedded["wp:featuredmedia"] &&
@@ -84,11 +174,16 @@ const Post = () => {
 		if (content) {
 			const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
 			if (imgMatch) {
-				return imgMatch[1];
+				let imageUrl = imgMatch[1];
+				// Make sure image URL is absolute
+				if (imageUrl && !imageUrl.startsWith("http")) {
+					imageUrl = `http://api.novamas.ba${imageUrl}`;
+				}
+				return imageUrl;
 			}
 		}
 
-		return "https://images.unsplash.com/photo-1544476915-ed1370594142?q=80&w=1287&auto=format&fit=crop";
+		return `${window.location.origin}/SEO_cover.jpg`;
 	};
 
 	// Format date
@@ -131,6 +226,40 @@ const Post = () => {
 
 	return (
 		<>
+			{/* SEO metadata - This is what social media crawlers will see */}
+			<Helmet>
+				<title>{seoData.title}</title>
+				<meta name="description" content={seoData.description} />
+				<link rel="canonical" href={seoData.url} />
+
+				{/* Open Graph / Facebook */}
+				<meta property="og:type" content={seoData.type} />
+				<meta property="og:url" content={seoData.url} />
+				<meta property="og:title" content={seoData.title} />
+				<meta property="og:description" content={seoData.description} />
+				<meta property="og:image" content={seoData.image} />
+				<meta property="og:site_name" content="NovamaS" />
+				{seoData.publishedTime && (
+					<meta
+						property="article:published_time"
+						content={seoData.publishedTime}
+					/>
+				)}
+				{seoData.modifiedTime && (
+					<meta
+						property="article:modified_time"
+						content={seoData.modifiedTime}
+					/>
+				)}
+
+				{/* Twitter */}
+				<meta name="twitter:card" content="summary_large_image" />
+				<meta name="twitter:url" content={seoData.url} />
+				<meta name="twitter:title" content={seoData.title} />
+				<meta name="twitter:description" content={seoData.description} />
+				<meta name="twitter:image" content={seoData.image} />
+			</Helmet>
+
 			<Navbar />
 			<div className="post-page">
 				{loading ? (

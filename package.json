@@ -11,15 +11,19 @@
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.4.1",
     "react-scripts": "5.0.1",
+    "react-snap": "^1.23.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "postbuild": "echo 'Skip react-snap in React 19'",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postbuild-disabled": "node -e \"require('./react-snap-plugin')(require('./package.json').reactSnap).then(opts => require('react-snap').run(opts))\""
   },
   "eslintConfig": {
     "extends": [
@@ -38,5 +42,29 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "reactSnap": {
+    "include": [
+      "/",
+      "/o-nama",
+      "/kontakt",
+      "/blogovi"
+    ],
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ],
+    "skipThirdPartyRequests": false,
+    "waitFor": 2000,
+    "puppeteerIgnoreHTTPSErrors": true,
+    "removeBlobs": true,
+    "minifyHtml": {
+      "collapseWhitespace": false,
+      "removeComments": false
+    },
+    "sourceMaps": false,
+    "fixtureHtmlPath": "public/crawler.html",
+    "concurrency": 4,
+    "cacheAjaxRequests": true
   }
 }

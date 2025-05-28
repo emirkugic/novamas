@@ -1,5 +1,7 @@
+// src/pages/About.jsx
 import React from "react";
 import { Camera, Calendar, Heart, Star, Users, Award } from "lucide-react";
+import SEO from "../components/SEO"; // Import SEO component
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Newsletter from "../components/Newsletter";
@@ -9,6 +11,11 @@ import "../global.css";
 const About = () => {
 	return (
 		<>
+			<SEO
+				title="O nama - NovamaS Modna Agencija"
+				description="Upoznajte NovamaS - Vašeg pouzdanog partnera u svijetu dječije mode već preko 25 godina. Otkrijte našu misiju, vrijednosti i projekte."
+			/>
+
 			<Navbar />
 			<div className="about-page">
 				<div className="about-hero">
@@ -45,7 +52,7 @@ const About = () => {
 							</div>
 							<div className="about-intro-image">
 								<img
-									src="https://novamasblog.com/wp-content/uploads/2025/03/IMG-20240922-WA0002-1.jpg"
+									src="https://api.novamas.ba/wp-content/uploads/2025/03/IMG-20240922-WA0002-1.jpg"
 									alt="NovamaS dječija moda"
 								/>
 							</div>
@@ -53,6 +60,7 @@ const About = () => {
 					</div>
 				</div>
 
+				{/* Rest of the component remains the same */}
 				<div className="about-values">
 					<div className="container">
 						<div className="section-header">
@@ -120,7 +128,7 @@ const About = () => {
 						<div className="team-content">
 							<div className="team-image">
 								<img
-									src="https://novamasblog.com/wp-content/uploads/2022/04/team1.webp"
+									src="https://api.novamas.ba/wp-content/uploads/2022/04/team1.webp"
 									alt="NovamaS tim"
 								/>
 							</div>
