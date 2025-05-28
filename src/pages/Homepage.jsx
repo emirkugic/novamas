@@ -13,19 +13,31 @@ import InstagramFeed from "../components/InstagramFeed";
 import Newsletter from "../components/Newsletter";
 import Footer from "../components/Footer";
 import SEOImage from "../components/SEOImage";
+import WP_API from "../config/api"; // Import our API config
 
 const Homepage = () => {
 	const [posts, setPosts] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [featuredPost, setFeaturedPost] = useState(null);
+	const [error, setError] = useState(null);
 
 	// Get domain for absolute URLs
 	const domain = process.env.REACT_APP_DOMAIN || window.location.origin;
 
 	useEffect(() => {
 		// Fetch posts from WordPress backend
-		fetch("https://api.novamas.ba/wp-json/wp/v2/posts?per_page=7&_embed")
-			.then((res) => res.json())
+		console.log("Fetching posts from:", WP_API.getFeaturedPosts());
+
+		fetch(WP_API.getFeaturedPosts())
+			.then((res) => {
+				if (!res.ok) {
+					console.error("API response not OK:", res.status, res.statusText);
+					throw new Error(
+						`Failed to fetch posts: ${res.status} ${res.statusText}`
+					);
+				}
+				return res.json();
+			})
 			.then((data) => {
 				if (data && data.length > 0) {
 					setFeaturedPost(data[0]);
@@ -35,6 +47,9 @@ const Homepage = () => {
 			})
 			.catch((error) => {
 				console.error("Error fetching blog posts:", error);
+				setError(
+					`Došlo je do greške pri učitavanju sadržaja. ${error.message}`
+				);
 				setLoading(false);
 			});
 	}, []);
@@ -54,7 +69,12 @@ const Homepage = () => {
 		if (content) {
 			const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
 			if (imgMatch) {
-				return imgMatch[1];
+				let imageUrl = imgMatch[1];
+				// Make sure image URL is absolute
+				if (imageUrl && !imageUrl.startsWith("http")) {
+					imageUrl = `${WP_API.base.split("/wp-json")[0]}${imageUrl}`;
+				}
+				return imageUrl;
 			}
 		}
 
@@ -118,20 +138,40 @@ const Homepage = () => {
 			<Navbar />
 			<Hero />
 
-			{!loading && featuredPost && (
-				<FeaturedPost
-					post={featuredPost}
-					limitExcerpt={limitExcerpt}
-					getImageForPost={getImageForPost}
-				/>
-			)}
+			{error ? (
+				<div
+					className="error-message container"
+					style={{
+						padding: "30px",
+						margin: "30px auto",
+						backgroundColor: "#fff6f6",
+						border: "1px solid #ff9999",
+						borderRadius: "8px",
+						color: "#d32f2f",
+						textAlign: "center",
+					}}
+				>
+					<h3>Greška pri učitavanju sadržaja</h3>
+					<p>{error}</p>
+				</div>
+			) : (
+				<>
+					{!loading && featuredPost && (
+						<FeaturedPost
+							post={featuredPost}
+							limitExcerpt={limitExcerpt}
+							getImageForPost={getImageForPost}
+						/>
+					)}
 
-			<PostsList
-				posts={posts}
-				loading={loading}
-				limitExcerpt={limitExcerpt}
-				getImageForPost={getImageForPost}
-			/>
+					<PostsList
+						posts={posts}
+						loading={loading}
+						limitExcerpt={limitExcerpt}
+						getImageForPost={getImageForPost}
+					/>
+				</>
+			)}
 
 			<KnowledgeSuccess />
 			<NovamasHistory />

@@ -10,9 +10,11 @@ import {
 	Share2,
 	Facebook,
 	Instagram,
+	AlertCircle,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import WP_API from "../config/api"; // Import our API config
 import "./Post.css";
 import "../global.css";
 
@@ -23,6 +25,7 @@ const Post = () => {
 	const [loading, setLoading] = useState(true);
 	const [relatedPosts, setRelatedPosts] = useState([]);
 	const [error, setError] = useState(null);
+	const [apiError, setApiError] = useState(null);
 	// SEO metadata state
 	const [seoData, setSeoData] = useState({
 		title: "NovamaS - Modna agencija za djecu i mlade",
@@ -36,19 +39,25 @@ const Post = () => {
 	useEffect(() => {
 		// Reset scroll position when post changes
 		window.scrollTo(0, 0);
-
 		setLoading(true);
+		setApiError(null);
+
+		// Log the API URL we're fetching from (for debugging)
+		console.log("Fetching post from:", WP_API.getPostBySlug(slug));
 
 		// Fetch the post by slug with embedded media
-		fetch(`http://api.novamas.ba/wp-json/wp/v2/posts?slug=${slug}&_embed`)
+		fetch(WP_API.getPostBySlug(slug))
 			.then((res) => {
 				if (!res.ok) {
-					throw new Error("Failed to fetch post");
+					console.error("API response not OK:", res.status, res.statusText);
+					throw new Error(
+						`Failed to fetch post: ${res.status} ${res.statusText}`
+					);
 				}
 				return res.json();
 			})
 			.then((data) => {
-				if (data.length > 0) {
+				if (data && data.length > 0) {
 					const postData = data[0];
 					setPost(postData);
 					console.log("Post Data:", postData); // Debug log
@@ -73,6 +82,7 @@ const Post = () => {
 							modifiedTime: postData.modified,
 						});
 					} else {
+						console.log("No SEO metadata found, using fallback extraction");
 						// Fallback: Extract SEO data manually
 						const title = postData.title.rendered.replace(
 							/<\/?[^>]+(>|$)/g,
@@ -98,6 +108,7 @@ const Post = () => {
 							postData._embedded["wp:featuredmedia"][0]
 						) {
 							image = postData._embedded["wp:featuredmedia"][0].source_url;
+							console.log("Using featured image for SEO:", image);
 						} else {
 							// Try to extract first image from content
 							const imgMatch = postData.content.rendered.match(
@@ -107,8 +118,9 @@ const Post = () => {
 								image = imgMatch[1];
 								// Make sure image URL is absolute
 								if (image && !image.startsWith("http")) {
-									image = `http://api.novamas.ba${image}`;
+									image = `${WP_API.base.split("/wp-json")[0]}${image}`;
 								}
+								console.log("Using content image for SEO:", image);
 							}
 						}
 
@@ -135,7 +147,10 @@ const Post = () => {
 			})
 			.catch((error) => {
 				console.error("Error fetching post:", error);
-				setError("Failed to load post. Please try again later.");
+				setApiError(`API greška: ${error.message}`);
+				setError(
+					"Došlo je do greške pri učitavanju članka. Molimo pokušajte ponovo kasnije."
+				);
 				setLoading(false);
 			});
 	}, [slug]);
@@ -146,10 +161,18 @@ const Post = () => {
 	}, [seoData]);
 
 	const fetchRelatedPosts = (categoryId, currentPostId) => {
-		fetch(
-			`http://api.novamas.ba/wp-json/wp/v2/posts?categories=${categoryId}&exclude=${currentPostId}&per_page=3&_embed`
-		)
-			.then((res) => res.json())
+		console.log(
+			"Fetching related posts from:",
+			WP_API.getRelatedPosts(categoryId, currentPostId)
+		);
+
+		fetch(WP_API.getRelatedPosts(categoryId, currentPostId))
+			.then((res) => {
+				if (!res.ok) {
+					throw new Error(`Failed to fetch related posts: ${res.status}`);
+				}
+				return res.json();
+			})
 			.then((data) => {
 				setRelatedPosts(data);
 			})
@@ -177,7 +200,7 @@ const Post = () => {
 				let imageUrl = imgMatch[1];
 				// Make sure image URL is absolute
 				if (imageUrl && !imageUrl.startsWith("http")) {
-					imageUrl = `http://api.novamas.ba${imageUrl}`;
+					imageUrl = `${WP_API.base.split("/wp-json")[0]}${imageUrl}`;
 				}
 				return imageUrl;
 			}
@@ -271,6 +294,12 @@ const Post = () => {
 					<div className="post-error">
 						<h2>Greška</h2>
 						<p>{error}</p>
+						{apiError && (
+							<div className="api-error-details">
+								<AlertCircle size={18} />
+								<p>{apiError}</p>
+							</div>
+						)}
 						<Link to="/blogovi" className="btn btn-primary">
 							Povratak na blogove
 						</Link>
