@@ -12,24 +12,53 @@ if (empty($matches) || !isset($matches[1])) {
 
 $slug = $matches[1];
 
-// WordPress API endpoint to fetch post by slug
-$api_url = "https://api.novamas.ba/wp-json/wp/v2/posts?slug=$slug&_embed";
+// Use same protocol as the current page
+$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://';
+$api_domain = 'api.novamas.ba';
 
-// Make API request
-$response = @file_get_contents($api_url);
+// Current domain name without protocol
+$current_domain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'novamas.ba';
+
+// WordPress API endpoint to fetch post by slug
+$api_url = "{$protocol}{$api_domain}/wp-json/wp/v2/posts?slug=$slug&_embed";
+
+// Create a stream context that disables SSL verification if needed
+$arrContextOptions = [
+    'ssl' => [
+        'verify_peer' => false,
+        'verify_peer_name' => false,
+    ],
+    'http' => [
+        'timeout' => 30 // Increase timeout to 30 seconds
+    ]
+];
+
+// SEO metadata defaults
+$title = "NovamaS - Modna agencija za djecu i mlade";
+$description = "Ekskluzivni odabir najnovijih kolekcija, trendova i inspiracije za vaše mališane";
+$image = "{$protocol}{$current_domain}/SEO_cover.jpg";
+$image_width = 1200;
+$image_height = 630;
+$url = "{$protocol}{$current_domain}/post/{$slug}";
+$published_time = "";
+$modified_time = "";
+
+// Make API request with the context
+$response = @file_get_contents($api_url, false, stream_context_create($arrContextOptions));
+
 if ($response === false) {
-    $title = "NovamaS - Modna agencija za djecu i mlade";
-    $description = "Ekskluzivni odabir najnovijih kolekcija, trendova i inspiracije za vaše mališane";
-    $image = "https://novamas.ba/SEO_cover.jpg";
-} else {
+    // If HTTPS fails, try HTTP as fallback
+    if ($protocol === 'https://') {
+        $api_url = "http://{$api_domain}/wp-json/wp/v2/posts?slug=$slug&_embed";
+        $response = @file_get_contents($api_url, false, stream_context_create($arrContextOptions));
+    }
+}
+
+if ($response !== false) {
     $post = json_decode($response, true);
 
     // Check if post exists
-    if (empty($post) || !is_array($post) || count($post) === 0) {
-        $title = "NovamaS - Modna agencija za djecu i mlade";
-        $description = "Ekskluzivni odabir najnovijih kolekcija, trendova i inspiracije za vaše mališane";
-        $image = "https://novamas.ba/SEO_cover.jpg";
-    } else {
+    if (!empty($post) && is_array($post) && count($post) > 0) {
         // Get the first (and only) post
         $post = $post[0];
 
@@ -37,31 +66,81 @@ if ($response === false) {
         $title = strip_tags($post['title']['rendered']) . " - NovamaS";
 
         // Extract excerpt for description
-        $description = '';
         if (isset($post['excerpt']['rendered'])) {
             $description = strip_tags($post['excerpt']['rendered']);
             if (strlen($description) > 160) {
                 $description = substr($description, 0, 157) . '...';
             }
-        } else {
-            $description = "Ekskluzivni odabir najnovijih kolekcija, trendova i inspiracije za vaše mališane";
         }
 
-        // Get featured image if available
-        $image = 'https://novamas.ba/SEO_cover.jpg'; // Default image
+        // Find image from multiple possible sources
+        $image_found = false;
+        $original_image = '';
+
+        // 1. Try featured image first
         if (isset($post['_embedded']['wp:featuredmedia']) && !empty($post['_embedded']['wp:featuredmedia'])) {
-            $image = $post['_embedded']['wp:featuredmedia'][0]['source_url'];
-        } else {
-            // Try to extract first image from content
+            $original_image = $post['_embedded']['wp:featuredmedia'][0]['source_url'];
+            $image_found = true;
+
+            // Try to get image dimensions if available
+            if (isset($post['_embedded']['wp:featuredmedia'][0]['media_details']['width'])) {
+                $image_width = $post['_embedded']['wp:featuredmedia'][0]['media_details']['width'];
+            }
+            if (isset($post['_embedded']['wp:featuredmedia'][0]['media_details']['height'])) {
+                $image_height = $post['_embedded']['wp:featuredmedia'][0]['media_details']['height'];
+            }
+        }
+
+        // 2. If no featured image, try to extract any image from content
+        if (!$image_found) {
             $content = $post['content']['rendered'];
-            preg_match('/<img[^>]+src="([^">]+)"/', $content, $imgMatches);
-            if (!empty($imgMatches) && isset($imgMatches[1])) {
-                $image = $imgMatches[1];
-                // Make sure image URL is absolute
-                if (!preg_match('/^https?:\/\//', $image)) {
-                    $image = 'https://api.novamas.ba' . $image;
+            if (preg_match_all('/<img[^>]+src=([\'"])(.*?)\1[^>]*>/i', $content, $matches)) {
+                if (!empty($matches[2][0])) {
+                    $image_url = $matches[2][0];
+
+                    // Make sure image URL is absolute
+                    if (!preg_match('/^https?:\/\//', $image_url)) {
+                        if (strpos($image_url, '/') === 0) {
+                            // URL starts with slash
+                            $image_url = $protocol . $api_domain . $image_url;
+                        } else {
+                            // URL is relative
+                            $image_url = $protocol . $api_domain . '/' . $image_url;
+                        }
+                    }
+
+                    $original_image = $image_url;
+                    $image_found = true;
                 }
             }
+        }
+
+        // 3. If still no image, try to find a gallery image
+        if (!$image_found) {
+            if (preg_match('/<figure[^>]*class="[^"]*wp-block-gallery[^"]*"[^>]*>.*?<img[^>]+src=([\'"])(.*?)\1[^>]*>/is', $content, $galleryMatches)) {
+                if (!empty($galleryMatches[2])) {
+                    $image_url = $galleryMatches[2];
+
+                    // Make sure image URL is absolute
+                    if (!preg_match('/^https?:\/\//', $image_url)) {
+                        if (strpos($image_url, '/') === 0) {
+                            // URL starts with slash
+                            $image_url = $protocol . $api_domain . $image_url;
+                        } else {
+                            // URL is relative
+                            $image_url = $protocol . $api_domain . '/' . $image_url;
+                        }
+                    }
+
+                    $original_image = $image_url;
+                    $image_found = true;
+                }
+            }
+        }
+
+        // Use the proxy for the image to avoid Facebook cross-domain issues
+        if ($image_found && !empty($original_image)) {
+            $image = "{$protocol}{$current_domain}/image-proxy.php?url=" . urlencode($original_image);
         }
 
         // Get post date for article:published_time
@@ -70,11 +149,11 @@ if ($response === false) {
     }
 }
 
-// URL for canonical and og:url
-$url = "https://novamas.ba/post/$slug";
+// For debugging (remove in production)
+$debug = false;
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 
 <head>
     <meta charset="utf-8" />
@@ -91,12 +170,15 @@ $url = "https://novamas.ba/post/$slug";
     <meta property="og:title" content="<?php echo htmlspecialchars($title); ?>" />
     <meta property="og:description" content="<?php echo htmlspecialchars($description); ?>" />
     <meta property="og:image" content="<?php echo htmlspecialchars($image); ?>" />
+    <meta property="og:image:width" content="<?php echo htmlspecialchars($image_width); ?>" />
+    <meta property="og:image:height" content="<?php echo htmlspecialchars($image_height); ?>" />
+    <meta property="og:image:alt" content="<?php echo htmlspecialchars($title); ?>" />
     <meta property="og:site_name" content="NovamaS" />
 
-    <?php if (isset($published_time)): ?>
+    <?php if (!empty($published_time)): ?>
         <meta property="article:published_time" content="<?php echo htmlspecialchars($published_time); ?>" />
     <?php endif; ?>
-    <?php if (isset($modified_time)): ?>
+    <?php if (!empty($modified_time)): ?>
         <meta property="article:modified_time" content="<?php echo htmlspecialchars($modified_time); ?>" />
     <?php endif; ?>
 
@@ -106,14 +188,36 @@ $url = "https://novamas.ba/post/$slug";
     <meta name="twitter:title" content="<?php echo htmlspecialchars($title); ?>" />
     <meta name="twitter:description" content="<?php echo htmlspecialchars($description); ?>" />
     <meta name="twitter:image" content="<?php echo htmlspecialchars($image); ?>" />
+
+    <!-- Force the browser to refresh OpenGraph data -->
+    <meta property="og:image:secure_url" content="<?php echo htmlspecialchars($image); ?>" />
+    <meta property="og:image:type" content="image/jpeg" />
 </head>
 
 <body>
-    <?php
-    // Include the objave.php file directly with the slug
-    $slug_param = urlencode($slug);
-    include 'objave.php';
-    ?>
+    <?php if ($debug): ?>
+        <div style="background:#f5f5f5; padding:20px; margin:20px; border:1px solid #ddd;">
+            <h1>SEO Debug Info</h1>
+            <p><strong>Title:</strong> <?php echo htmlspecialchars($title); ?></p>
+            <p><strong>Description:</strong> <?php echo htmlspecialchars($description); ?></p>
+            <p><strong>URL:</strong> <?php echo htmlspecialchars($url); ?></p>
+            <p><strong>Original Image:</strong> <?php echo isset($original_image) ? htmlspecialchars($original_image) : 'None'; ?></p>
+            <p><strong>Proxied Image:</strong> <?php echo htmlspecialchars($image); ?></p>
+            <p><strong>Type:</strong> article</p>
+            <p><strong>Published:</strong> <?php echo htmlspecialchars($published_time); ?></p>
+            <p><strong>Modified:</strong> <?php echo htmlspecialchars($modified_time); ?></p>
+            <p><strong>Image Size:</strong> <?php echo $image_width; ?> x <?php echo $image_height; ?></p>
+            <hr>
+            <h3>Image Preview:</h3>
+            <img src="<?php echo htmlspecialchars($image); ?>" style="max-width:600px; margin-top:20px;" />
+        </div>
+    <?php else: ?>
+        <?php
+        // For regular users, redirect to the objave.php page
+        header("Location: /objave.php?slug=" . urlencode($slug));
+        exit;
+        ?>
+    <?php endif; ?>
 </body>
 
 </html>
