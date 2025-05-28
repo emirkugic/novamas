@@ -13,7 +13,7 @@ if (empty($matches) || !isset($matches[1])) {
 $slug = $matches[1];
 
 // WordPress API endpoint to fetch post by slug
-$api_url = "https://test.araneum.ba/wp-json/wp/v2/posts?slug=$slug&_embed";
+$api_url = "https://api.novamas.ba/wp-json/wp/v2/posts?slug=$slug&_embed";
 
 // Make API request
 $response = @file_get_contents($api_url);
@@ -59,7 +59,7 @@ if ($response === false) {
                 $image = $imgMatches[1];
                 // Make sure image URL is absolute
                 if (!preg_match('/^https?:\/\//', $image)) {
-                    $image = 'https://test.araneum.ba' . $image;
+                    $image = 'https://api.novamas.ba' . $image;
                 }
             }
         }

@@ -51,10 +51,7 @@ const About = () => {
 								</p>
 							</div>
 							<div className="about-intro-image">
-								<img
-									src="https://api.novamas.ba/wp-content/uploads/2025/03/IMG-20240922-WA0002-1.jpg"
-									alt="NovamaS dječija moda"
-								/>
+								<img src="/o-nama1.jpg" alt="NovamaS dječija moda" />
 							</div>
 						</div>
 					</div>
@@ -127,10 +124,7 @@ const About = () => {
 						</div>
 						<div className="team-content">
 							<div className="team-image">
-								<img
-									src="https://api.novamas.ba/wp-content/uploads/2022/04/team1.webp"
-									alt="NovamaS tim"
-								/>
+								<img src="/o-nama2.webp" alt="NovamaS tim" />
 							</div>
 							<div className="team-description">
 								<p>

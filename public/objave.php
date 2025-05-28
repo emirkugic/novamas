@@ -10,7 +10,7 @@ if (empty($slug)) {
 }
 
 // WordPress API endpoint to fetch post by slug
-$api_url = "https://test.araneum.ba/wp-json/wp/v2/posts?slug=$slug&_embed";
+$api_url = "https://api.novamas.ba/wp-json/wp/v2/posts?slug=$slug&_embed";
 
 // Make API request
 $response = @file_get_contents($api_url);
@@ -48,7 +48,7 @@ if ($response === false) {
                 $featured_image = $imgMatches[1];
                 // Make sure image URL is absolute
                 if (!preg_match('/^https?:\/\//', $featured_image)) {
-                    $featured_image = 'https://test.araneum.ba' . $featured_image;
+                    $featured_image = 'https://api.novamas.ba' . $featured_image;
                 }
             }
         }
@@ -63,7 +63,7 @@ if ($response === false) {
         $related_posts = array();
         if (!empty($post['categories']) && isset($post['categories'][0])) {
             $category_id = $post['categories'][0];
-            $related_api_url = "https://test.araneum.ba/wp-json/wp/v2/posts?categories=$category_id&exclude={$post['id']}&per_page=3&_embed";
+            $related_api_url = "https://api.novamas.ba/wp-json/wp/v2/posts?categories=$category_id&exclude={$post['id']}&per_page=3&_embed";
             $related_response = @file_get_contents($related_api_url);
             if ($related_response !== false) {
                 $related_posts = json_decode($related_response, true);
@@ -86,7 +86,7 @@ function get_post_image($post)
         $image = $imgMatches[1];
         // Make sure image URL is absolute
         if (!preg_match('/^https?:\/\//', $image)) {
-            $image = 'https://test.araneum.ba' . $image;
+            $image = 'https://api.novamas.ba' . $image;
         }
         return $image;
     }
